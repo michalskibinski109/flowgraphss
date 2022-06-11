@@ -1,3 +1,5 @@
+from networkx.drawing.nx_pydot import graphviz_layout
+import json
 import networkx as nx
 import matplotlib.pyplot as plt
 #Edmonds-Karp Algorithm
@@ -34,25 +36,50 @@ def bfs(C, F, s, t):
     
 def CtoNE(C):
     """capacity matrix to Edges and Nodes"""
-    N, E = [],[]
+    N = []
+    e = []
+    E = [] #(u,v,weight)
     # 97 - a
     N = [i for i in range(len(C))]
     for i in range(len(C)):
         for j in range(len(C)):
             if C[i][j] != 0:
-                E.append((N[i], N[j])) 
-    return N, E    
-# make a capacity graph
-# nod  s   o   p   q   r   t
-C = [[ 0, 3, 3, 0, 0, 0 ],  # s
-     [ 0, 0, 2, 3, 0, 0 ],  # o
-     [ 0, 0, 0, 0, 2, 0 ],  # p
-     [ 0, 0, 0, 0, 4, 2 ],  # q
-     [ 0, 0, 2, 0, 0, 2 ],  # r
-     [ 0, 0, 0, 0, 0, 0 ]]  # t
-N, E = CtoNE(C)
-G = nx.Graph(E)
-nx.draw(G, with_labels=True)
+                E.append((N[i], N[j], '0/'+str(C[i][j]))) 
+                e.append((N[i], N[j], C[i][j])) 
+    return e, E    
+
+def plot(C):
+    e, E = CtoNE(C)
+    G = nx.DiGraph()
+    G.add_weighted_edges_from(e)
+    pos = nx.spring_layout(G, seed=7)  # positions for all nodes - seed for reproducibility
+    G = nx.DiGraph()
+    G.add_weighted_edges_from(E)
+
+    # nodes
+    nx.draw_networkx_nodes(G, pos, node_size=700)
+
+    # edges
+    nx.draw_networkx_edges(G, pos, width=3)
+
+    # node labels
+    nx.draw_networkx_labels(G, pos, font_size=20, font_family="sans-serif")
+    # edge weight labels
+    edge_labels = nx.get_edge_attributes(G, "weight")
+    nx.draw_networkx_edge_labels(G, pos, edge_labels)
+
+    ax = plt.gca()
+    ax.margins(0.08)
+    plt.axis("off")
+    plt.tight_layout()
+    plt.show()
+
+
+with open('graph.json', 'r') as f:
+    C = json.load(f)
+C = C['C']
+
+
 
 
 source = 0  # a
@@ -62,4 +89,4 @@ print("Edmonds-Karp algorithm")
 print("max_flow_value is: ",max_flow_value)
 
 
-plt.show()
+plot(C)
