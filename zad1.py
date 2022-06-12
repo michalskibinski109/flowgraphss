@@ -1,9 +1,8 @@
-from networkx.drawing.nx_pydot import graphviz_layout
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
+
 #Edmonds-Karp Algorithm
-f = lambda x: chr(x + 97)
 def max_flow(C, s, t):
         n = len(C) # C is the capacity matrix
         F = [[0] * n for i in range(n)]
@@ -74,6 +73,30 @@ def plot(C):
     plt.tight_layout()
     plt.show()
 
+def ford_fulkerson(C, source, sink):
+        parent = [-1] * (len(C))
+        max_flow = 0
+
+        while bfs(C, source, sink, parent):
+
+            path_flow = float("Inf")
+            s = sink
+            while(s != source):
+                path_flow = min(path_flow, C[parent[s]][s])
+                s = parent[s]
+
+            # Adding the path flows
+            max_flow += path_flow
+
+            # Updating the residual values of edges
+            v = sink
+            while(v != source):
+                u = parent[v]
+                C[u][v] -= path_flow
+                C[v][u] += path_flow
+                v = parent[v]
+
+        return max_flow
 
 with open('graph.json', 'r') as f:
     C = json.load(f)
